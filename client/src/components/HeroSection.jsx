@@ -9,7 +9,11 @@ export default function HeroSection({
 }) {
   return (
     <div className="relative flex flex-1 flex-col justify-center gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div
+        className="pointer-events-none absolute -left-8 -top-12 h-48 w-48 rounded-full bg-accent/15 blur-3xl motion-safe:transition-opacity"
+        aria-hidden
+      />
+      <div className="relative flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">Constructor</p>
           <h1 className="max-w-xl text-3xl font-semibold tracking-tight text-white md:text-4xl">{teamName}</h1>

@@ -33,10 +33,15 @@ export async function fetchTeam(id) {
   return data;
 }
 
-export async function fetchDrivers(teamId) {
-  const { data } = await client.get('/drivers', {
-    params: teamId ? { team_id: teamId } : undefined,
-  });
+export async function fetchDrivers(opts = {}) {
+  const teamId = typeof opts === 'number' || typeof opts === 'string' ? opts : opts?.teamId ?? opts?.team_id;
+  const sort = typeof opts === 'object' && opts && 'sort' in opts ? opts.sort : undefined;
+  const order = typeof opts === 'object' && opts && 'order' in opts ? opts.order : undefined;
+  const params = {};
+  if (teamId != null && String(teamId).trim() !== '') params.team_id = teamId;
+  if (sort) params.sort = sort;
+  if (order) params.order = order;
+  const { data } = await client.get('/drivers', { params: Object.keys(params).length ? params : undefined });
   return Array.isArray(data) ? data : [];
 }
 
@@ -63,9 +68,18 @@ export async function fetchRaces(seasonId) {
 }
 
 /** Summary KPIs + recent races — not the same as analytics charts. */
-export async function fetchDashboardStats(teamId) {
-  const { data } = await client.get('/stats/dashboard', {
-    params: teamId != null ? { team_id: teamId } : {},
+export async function fetchDashboardStats(opts = {}) {
+  const params = {};
+  if (opts.teamId != null && opts.teamId !== '') params.team_id = opts.teamId;
+  if (opts.driverId != null && opts.driverId !== '') params.driver_id = opts.driverId;
+  if (opts.seasonId != null && opts.seasonId !== '') params.season_id = opts.seasonId;
+  const { data } = await client.get('/stats/dashboard', { params });
+  return data;
+}
+
+export async function fetchStandings(seasonId) {
+  const { data } = await client.get('/stats/standings', {
+    params: { season_id: seasonId },
   });
   return data;
 }

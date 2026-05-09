@@ -6,6 +6,8 @@ import { createTeam, updateTeam, deleteTeam, formatAxiosError } from '../api.js'
 const sortKeys = [
   { id: 'name', label: 'Team' },
   { id: 'founded_year', label: 'Founded' },
+  { id: 'constructors_titles', label: 'Titles' },
+  { id: 'active_status', label: 'Status' },
 ];
 
 function compare(a, b, key, dir) {
@@ -19,9 +21,10 @@ function compare(a, b, key, dir) {
 }
 
 export default function Teams() {
-  const { teams, reload, searchQuery } = useOutletContext();
+  const { teams, reload, searchQuery, isAdmin } = useOutletContext();
   const [sortKey, setSortKey] = useState('name');
   const [sortDir, setSortDir] = useState(1);
+  const [activeFilter, setActiveFilter] = useState('');
   const [name, setName] = useState('');
   const [color, setColor] = useState('#E10600');
   const [year, setYear] = useState(new Date().getFullYear());
@@ -34,12 +37,20 @@ export default function Teams() {
   const [editYear, setEditYear] = useState(2000);
 
   const filteredTeams = useMemo(() => {
+    let list = teams;
+    if (activeFilter) {
+      list = list.filter((t) => (t.active_status || 'Active') === activeFilter);
+    }
     const q = (searchQuery ?? '').trim().toLowerCase();
-    if (!q) return teams;
-    return teams.filter(
-      (t) => t.name.toLowerCase().includes(q) || String(t.founded_year ?? '').includes(q)
+    if (!q) return list;
+    return list.filter(
+      (t) =>
+        t.name.toLowerCase().includes(q) ||
+        String(t.founded_year ?? '').includes(q) ||
+        String(t.constructors_titles ?? '').includes(q) ||
+        (t.active_status || '').toLowerCase().includes(q)
     );
-  }, [teams, searchQuery]);
+  }, [teams, searchQuery, activeFilter]);
 
   const sorted = useMemo(() => {
     const list = [...filteredTeams];
@@ -51,7 +62,7 @@ export default function Teams() {
     if (sortKey === key) setSortDir((d) => -d);
     else {
       setSortKey(key);
-      setSortDir(1);
+      setSortDir(key === 'constructors_titles' ? -1 : 1);
     }
   }
 
@@ -116,10 +127,27 @@ export default function Teams() {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
       <div>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
         <h2 className="text-2xl font-semibold text-white">Teams</h2>
         <p className="mt-1 text-sm text-zinc-500">
           Create, update, delete — persisted in MySQL. Header search filters this table.
+          {!isAdmin ? ' Driver mode: read-only.' : null}
         </p>
+          </div>
+          <label className="text-xs text-zinc-400">
+            Status
+            <select
+              value={activeFilter}
+              onChange={(e) => setActiveFilter(e.target.value)}
+              className="mt-1 block min-w-[140px] rounded-xl border border-white/10 bg-canvas px-3 py-2 text-sm text-white"
+            >
+              <option value="">All</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </label>
+        </div>
         <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.06] bg-surface">
           <table className="w-full min-w-[480px] text-left text-sm">
             <thead>
@@ -141,14 +169,16 @@ export default function Teams() {
                     </button>
                   </th>
                 ))}
+                <th className="px-4 py-3 font-medium text-zinc-400">Titles</th>
+                <th className="px-4 py-3 font-medium text-zinc-400">Status</th>
                 <th className="px-4 py-3 font-medium text-zinc-400">Color</th>
-                <th className="px-4 py-3 text-right font-medium text-zinc-400">Actions</th>
+                {isAdmin ? <th className="px-4 py-3 text-right font-medium text-zinc-400">Actions</th> : null}
               </tr>
             </thead>
             <tbody>
               {sorted.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center text-sm text-zinc-500">
+                  <td colSpan={isAdmin ? 6 : 5} className="px-4 py-10 text-center text-sm text-zinc-500">
                     {teams.length === 0
                       ? 'No teams loaded.'
                       : 'No teams match the header search.'}
@@ -159,12 +189,15 @@ export default function Teams() {
                   <tr key={t.id} className="border-b border-white/[0.04] last:border-0">
                     <td className="px-4 py-3 font-medium text-white">{t.name}</td>
                     <td className="px-4 py-3 text-zinc-400">{t.founded_year}</td>
+                    <td className="px-4 py-3 text-zinc-400">{t.constructors_titles ?? 0}</td>
+                    <td className="px-4 py-3 text-zinc-500">{t.active_status ?? '—'}</td>
                     <td className="px-4 py-3">
                       <span
                         className="inline-block h-6 w-6 rounded-full border border-white/10"
                         style={{ background: t.color }}
                       />
                     </td>
+                    {isAdmin ? (
                     <td className="px-4 py-3 text-right">
                       <button
                         type="button"
@@ -183,6 +216,7 @@ export default function Teams() {
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </td>
+                    ) : null}
                   </tr>
                 ))
               )}
@@ -192,6 +226,7 @@ export default function Teams() {
       </div>
 
       <div className="space-y-6">
+        {isAdmin ? (
         <form
           onSubmit={onCreate}
           className="space-y-4 rounded-2xl border border-white/[0.06] bg-surface p-5 shadow-card"
@@ -228,13 +263,14 @@ export default function Teams() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-accent py-2.5 text-sm font-semibold text-white transition hover:bg-red-600 disabled:opacity-50"
+            className="w-full rounded-xl bg-gradient-to-r from-accent to-red-700 py-2.5 text-sm font-semibold text-white shadow-sm hover:brightness-110 disabled:opacity-50 motion-safe:transition motion-safe:duration-150"
           >
             {loading ? 'Saving…' : 'Create team'}
           </button>
         </form>
+        ) : null}
 
-        {editing != null && (
+        {isAdmin && editing != null && (
           <form
             onSubmit={onUpdate}
             className="space-y-4 rounded-2xl border border-accent/30 bg-surface p-5 shadow-card"

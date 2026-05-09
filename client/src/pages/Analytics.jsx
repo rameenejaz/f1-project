@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -12,7 +12,7 @@ import {
   YAxis,
 } from 'recharts';
 import ChartCard from '../components/ChartCard.jsx';
-import { fetchAnalyticsStats } from '../api.js';
+import { fetchAnalyticsStats, fetchSeasons, fetchStandings, formatAxiosError } from '../api.js';
 
 const chartTooltip = {
   contentStyle: {
@@ -30,6 +30,10 @@ export default function Analytics() {
     winsPerDriver: [],
     performanceTrend: [],
   });
+  const [seasons, setSeasons] = useState([]);
+  const [standingsSeasonId, setStandingsSeasonId] = useState('');
+  const [constructorPoints, setConstructorPoints] = useState([]);
+  const [standingsErr, setStandingsErr] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -47,6 +51,59 @@ export default function Analytics() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const s = await fetchSeasons();
+        if (cancelled) return;
+        setSeasons(s);
+        setStandingsSeasonId((prev) => {
+          if (prev) return prev;
+          if (!s.length) return '';
+          const latest = [...s].sort((a, b) => b.year - a.year)[0];
+          return String(latest.id);
+        });
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!standingsSeasonId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchStandings(Number(standingsSeasonId));
+        if (cancelled) return;
+        const rows = Array.isArray(data?.constructorStandings) ? data.constructorStandings : [];
+        setConstructorPoints(
+          rows
+            .filter((r) => r.points > 0)
+            .map((r) => ({ name: r.name, points: r.points, color: r.color || '#E10600' }))
+        );
+        setStandingsErr('');
+      } catch (e) {
+        if (!cancelled) {
+          setConstructorPoints([]);
+          setStandingsErr(formatAxiosError(e));
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [standingsSeasonId]);
+
+  const standingsYear = useMemo(() => {
+    const s = seasons.find((x) => String(x.id) === String(standingsSeasonId));
+    return s?.year ?? '';
+  }, [seasons, standingsSeasonId]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -57,6 +114,53 @@ export default function Analytics() {
           (separate from the dashboard summary).
         </p>
       </div>
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <p className="text-xs text-zinc-500">Constructor points by season (from GET /stats/standings)</p>
+        <label className="text-xs text-zinc-400">
+          Season
+          <select
+            value={standingsSeasonId}
+            onChange={(e) => setStandingsSeasonId(e.target.value)}
+            className="ml-2 rounded-xl border border-white/10 bg-canvas px-3 py-2 text-sm text-white"
+          >
+            {seasons.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.year}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      {standingsErr ? <p className="mb-4 text-sm text-rose-300">{standingsErr}</p> : null}
+      <div className="mb-6">
+        <ChartCard title={`Constructor points ${standingsYear ? `(${standingsYear})` : ''}`} badge="standings">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={constructorPoints}
+              layout="vertical"
+              margin={{ top: 8, right: 16, left: 8, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a33" horizontal={false} />
+              <XAxis type="number" tick={{ fill: '#a1a1aa', fontSize: 11 }} axisLine={false} allowDecimals={false} />
+              <YAxis
+                type="category"
+                dataKey="name"
+                width={140}
+                tick={{ fill: '#a1a1aa', fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip {...chartTooltip} />
+              <Bar dataKey="points" radius={[0, 6, 6, 0]} isAnimationActive animationDuration={900}>
+                {constructorPoints.map((entry, i) => (
+                  <Cell key={i} fill={entry.color || '#6366f1'} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartCard title="Races per month" badge="MySQL">
           <ResponsiveContainer width="100%" height="100%">

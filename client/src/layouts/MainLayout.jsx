@@ -4,12 +4,57 @@ import Sidebar from '../components/Sidebar.jsx';
 import Navbar from '../components/Navbar.jsx';
 import { fetchDrivers, fetchTeams, formatAxiosError } from '../api.js';
 
+const STORAGE_ROLE = 'f1-demo-role';
+const STORAGE_DRIVER = 'f1-demo-driver-id';
+
+function readStoredRole() {
+  try {
+    const v = localStorage.getItem(STORAGE_ROLE);
+    if (v === 'admin' || v === 'driver') return v;
+  } catch {
+    /* ignore */
+  }
+  return 'admin';
+}
+
+function readStoredDriverId() {
+  try {
+    const v = localStorage.getItem(STORAGE_DRIVER);
+    if (v == null || v === '') return null;
+    const n = Number(v);
+    return Number.isInteger(n) && n > 0 ? n : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function MainLayout() {
   const [teams, setTeams] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [role, setRoleState] = useState(readStoredRole);
+  const [selectedDriverId, setSelectedDriverIdState] = useState(readStoredDriverId);
+
+  const setRole = useCallback((next) => {
+    setRoleState(next);
+    try {
+      localStorage.setItem(STORAGE_ROLE, next);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const setSelectedDriverId = useCallback((id) => {
+    setSelectedDriverIdState(id);
+    try {
+      if (id == null) localStorage.removeItem(STORAGE_DRIVER);
+      else localStorage.setItem(STORAGE_DRIVER, String(id));
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const reload = useCallback(async () => {
     setLoadError('');
@@ -47,6 +92,15 @@ export default function MainLayout() {
     };
   }, []);
 
+  useEffect(() => {
+    if (selectedDriverId == null) return;
+    if (!drivers.some((d) => d.id === selectedDriverId)) {
+      setSelectedDriverId(null);
+    }
+  }, [drivers, selectedDriverId, setSelectedDriverId]);
+
+  const isAdmin = role === 'admin';
+
   const ctx = useMemo(
     () => ({
       teams,
@@ -59,20 +113,42 @@ export default function MainLayout() {
       loadError,
       searchQuery,
       setSearchQuery,
+      role,
+      setRole,
+      selectedDriverId,
+      setSelectedDriverId,
+      isAdmin,
     }),
-    [teams, drivers, selectedTeamId, reload, loadError, searchQuery]
+    [
+      teams,
+      drivers,
+      selectedTeamId,
+      reload,
+      loadError,
+      searchQuery,
+      role,
+      setRole,
+      selectedDriverId,
+      setSelectedDriverId,
+      isAdmin,
+    ]
   );
 
   return (
-    <div className="min-h-screen bg-canvas text-white">
+    <div className="layout-main-bg min-h-screen bg-canvas text-white">
       <Sidebar />
       <div className="pl-64">
         <Navbar
           teams={teams}
+          drivers={drivers}
           selectedTeamId={selectedTeamId}
           onTeamChange={(id) => setSelectedTeamId(id)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          role={role}
+          onRoleChange={setRole}
+          selectedDriverId={selectedDriverId}
+          onDriverChange={setSelectedDriverId}
         />
         <main className="p-6">
           {loadError ? (

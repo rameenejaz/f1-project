@@ -6,6 +6,7 @@ import Drivers from './pages/Drivers.jsx';
 import DriverDetail from './pages/DriverDetail.jsx';
 import Teams from './pages/Teams.jsx';
 import Seasons from './pages/Seasons.jsx';
+import Races from './pages/Races.jsx';
 import Analytics from './pages/Analytics.jsx';
 import Settings from './pages/Settings.jsx';
 
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="drivers/:id" element={<DriverDetail />} />
         <Route path="teams" element={<Teams />} />
         <Route path="seasons" element={<Seasons />} />
+        <Route path="races" element={<Races />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="settings" element={<Settings />} />
       </Route>

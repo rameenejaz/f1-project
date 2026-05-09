@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { ArrowLeft, Flag, Gauge, Trophy } from 'lucide-react';
 import { fetchDriver, formatAxiosError } from '../api.js';
 
 export default function DriverDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAdmin } = useOutletContext() ?? { isAdmin: true };
   const [driver, setDriver] = useState(null);
   const [err, setErr] = useState('');
 
@@ -125,7 +126,11 @@ export default function DriverDetail() {
         <div className="border-t border-white/[0.06] px-8 py-8">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Bio</h2>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-zinc-300">
-            {driver.description?.trim() ? driver.description : 'No biography stored yet. Edit this driver on the Drivers page.'}
+            {driver.description?.trim()
+              ? driver.description
+              : isAdmin
+                ? 'No biography stored yet. Edit this driver on the Drivers page.'
+                : 'No biography stored yet.'}
           </p>
         </div>
 

@@ -5,12 +5,13 @@ import {
   Users,
   Shield,
   Calendar,
+  Flag,
   LineChart,
   Settings,
 } from 'lucide-react';
 
 const linkBase =
-  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-400 transition hover:bg-white/5 hover:text-white';
+  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-400 motion-safe:transition-colors motion-safe:duration-150 hover:bg-white/5 hover:text-white';
 
 const linkActive = ({ isActive }) =>
   [
@@ -26,6 +27,7 @@ const items = [
   { to: '/drivers', label: 'Drivers', icon: Users },
   { to: '/teams', label: 'Teams', icon: Shield },
   { to: '/seasons', label: 'Seasons', icon: Calendar },
+  { to: '/races', label: 'Races', icon: Flag },
   { to: '/analytics', label: 'Analytics', icon: LineChart },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];

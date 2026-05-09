@@ -6,9 +6,26 @@
   --bg: #0b0b0f;
   --surface: #12121a;
   --accent: #e10600;
+  --accent-soft: #ff2d20;
+  --silver: #a1a1aa;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
   background: var(--bg);
+}
+
+.layout-main-bg {
+  background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(225, 6, 0, 0.12), transparent 55%);
 }

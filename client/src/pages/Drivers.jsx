@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { ArrowDown, ArrowUp, Pencil, Trash2, X } from 'lucide-react';
-import { createDriver, updateDriver, deleteDriver, formatAxiosError } from '../api.js';
+import { createDriver, updateDriver, deleteDriver, fetchDrivers, formatAxiosError } from '../api.js';
 
 const columns = [
   { id: 'name', label: 'Driver' },
@@ -10,6 +10,9 @@ const columns = [
   { id: 'start_year', label: 'Debut' },
   { id: 'performance_score', label: 'Score' },
   { id: 'total_wins', label: 'Wins' },
+  { id: 'podium_finishes', label: 'Podiums' },
+  { id: 'pole_positions', label: 'Poles' },
+  { id: 'points', label: 'Points' },
 ];
 
 function compare(a, b, key, dir) {
@@ -32,6 +35,9 @@ function matchesGlobalSearch(query, driver) {
     driver.start_year,
     driver.performance_score,
     driver.total_wins,
+    driver.podium_finishes,
+    driver.pole_positions,
+    driver.points,
   ]
     .map((x) => (x == null ? '' : String(x)))
     .join(' ')
@@ -40,10 +46,11 @@ function matchesGlobalSearch(query, driver) {
 }
 
 export default function Drivers() {
-  const { drivers, teams, reload, searchQuery } = useOutletContext();
+  const { drivers, teams, reload, searchQuery, isAdmin } = useOutletContext();
   const [sortKey, setSortKey] = useState('name');
   const [sortDir, setSortDir] = useState(1);
   const [filterTeamId, setFilterTeamId] = useState('');
+  const [tableDrivers, setTableDrivers] = useState([]);
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -64,23 +71,50 @@ export default function Drivers() {
   const [eWins, setEWins] = useState(0);
   const [eDesc, setEDesc] = useState('');
 
-  const filtered = useMemo(() => {
-    let list = !filterTeamId ? drivers : drivers.filter((d) => d.team_id === Number(filterTeamId));
-    list = list.filter((d) => matchesGlobalSearch(searchQuery ?? '', d));
-    return list;
-  }, [drivers, filterTeamId, searchQuery]);
+  useEffect(() => {
+    let cancelled = false;
+    const clientSortKeys = new Set(['team', 'nationality', 'start_year']);
+    const sortApi = clientSortKeys.has(sortKey)
+      ? 'name'
+      : {
+          name: 'name',
+          total_wins: 'wins',
+          podium_finishes: 'podiums',
+          pole_positions: 'poles',
+          points: 'points',
+          performance_score: 'score',
+        }[sortKey] || 'name';
+    (async () => {
+      try {
+        const rows = await fetchDrivers({
+          teamId: filterTeamId ? Number(filterTeamId) : undefined,
+          sort: sortApi,
+          order: sortDir === 1 ? 'asc' : 'desc',
+        });
+        if (!cancelled) setTableDrivers(rows);
+      } catch {
+        if (!cancelled) setTableDrivers(drivers);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [filterTeamId, sortKey, sortDir, drivers]);
 
-  const sorted = useMemo(() => {
-    const list = [...filtered];
-    list.sort((a, b) => compare(a, b, sortKey, sortDir));
+  const visibleRows = useMemo(() => {
+    let list = tableDrivers.filter((d) => matchesGlobalSearch(searchQuery ?? '', d));
+    if (['team', 'nationality', 'start_year'].includes(sortKey)) {
+      list = [...list];
+      list.sort((a, b) => compare(a, b, sortKey, sortDir));
+    }
     return list;
-  }, [filtered, sortKey, sortDir]);
+  }, [tableDrivers, searchQuery, sortKey, sortDir]);
 
   function toggleSort(key) {
     if (sortKey === key) setSortDir((d) => -d);
     else {
       setSortKey(key);
-      setSortDir(key === 'total_wins' ? -1 : 1);
+      setSortDir(key === 'total_wins' || key === 'points' || key === 'podium_finishes' ? -1 : 1);
     }
   }
 
@@ -172,6 +206,7 @@ export default function Drivers() {
           <h2 className="text-2xl font-semibold text-white">Drivers</h2>
           <p className="text-sm text-zinc-500">
           Filter by team · header search narrows this list · sort by name or wins · edit in modal · profiles on name.
+          {!isAdmin ? ' Driver mode: read-only.' : null}
         </p>
         </div>
         <label className="text-xs text-zinc-400">
@@ -191,6 +226,7 @@ export default function Drivers() {
         </label>
       </div>
 
+      {isAdmin ? (
       <form
         onSubmit={onAdd}
         className="space-y-4 rounded-2xl border border-white/[0.06] bg-surface p-5 shadow-card"
@@ -277,14 +313,15 @@ export default function Drivers() {
         <button
           type="submit"
           disabled={loading || !addTeamId}
-          className="rounded-xl bg-accent px-6 py-2.5 text-sm font-semibold text-white hover:bg-red-600 disabled:opacity-50"
+          className="rounded-xl bg-gradient-to-r from-accent to-red-700 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:brightness-110 disabled:opacity-50 motion-safe:transition motion-safe:duration-150"
         >
           Add driver
         </button>
       </form>
+      ) : null}
 
       <div className="overflow-x-auto rounded-2xl border border-white/[0.06] bg-surface">
-        <table className="w-full min-w-[860px] text-left text-sm">
+        <table className="w-full min-w-[1040px] text-left text-sm">
           <thead>
             <tr className="border-b border-white/[0.06] text-xs uppercase tracking-wide text-zinc-500">
               {columns.map(({ id, label }) => (
@@ -300,20 +337,20 @@ export default function Drivers() {
                   </button>
                 </th>
               ))}
-              <th className="px-4 py-3 text-right font-medium text-zinc-400">Actions</th>
+              {isAdmin ? <th className="px-4 py-3 text-right font-medium text-zinc-400">Actions</th> : null}
             </tr>
           </thead>
           <tbody>
-            {sorted.length === 0 ? (
+            {visibleRows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-sm text-zinc-500">
+                <td colSpan={isAdmin ? 10 : 9} className="px-4 py-10 text-center text-sm text-zinc-500">
                   {drivers.length === 0
                     ? 'No drivers loaded.'
                     : 'No drivers match the team filter or header search.'}
                 </td>
               </tr>
             ) : (
-              sorted.map((d) => (
+              visibleRows.map((d) => (
                 <tr key={d.id} className="border-b border-white/[0.04] last:border-0">
                   <td className="px-4 py-3 font-medium">
                     <Link to={`/drivers/${d.id}`} className="text-white hover:text-accent">
@@ -325,6 +362,10 @@ export default function Drivers() {
                   <td className="px-4 py-3 text-zinc-400">{d.start_year}</td>
                   <td className="px-4 py-3 text-zinc-300">{d.performance_score}</td>
                   <td className="px-4 py-3 text-zinc-300">{d.total_wins ?? 0}</td>
+                  <td className="px-4 py-3 text-zinc-400">{d.podium_finishes ?? 0}</td>
+                  <td className="px-4 py-3 text-zinc-400">{d.pole_positions ?? 0}</td>
+                  <td className="px-4 py-3 text-zinc-300">{d.points ?? 0}</td>
+                  {isAdmin ? (
                   <td className="px-4 py-3 text-right">
                     <button
                       type="button"
@@ -343,6 +384,7 @@ export default function Drivers() {
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </td>
+                  ) : null}
                 </tr>
               ))
             )}
@@ -352,7 +394,7 @@ export default function Drivers() {
 
       {msg && <p className="text-center text-xs text-zinc-400">{msg}</p>}
 
-      {modalId != null && (
+      {isAdmin && modalId != null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button
             type="button"

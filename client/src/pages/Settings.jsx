@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Bell, Moon, User, Sparkles } from 'lucide-react';
+import { Bell, User, Sparkles } from 'lucide-react';
 
 const LS_NOTIFY = 'f1-settings-notify';
 
@@ -29,70 +29,64 @@ export default function Settings() {
   }, [notify]);
 
   return (
-    <div className="mx-auto max-w-xl space-y-8">
+    <div className="mx-auto max-w-prose space-y-8">
       <div>
-        <h2 className="text-2xl font-semibold text-white">Settings</h2>
-        <p className="mt-1 text-sm text-zinc-500">Personal preferences for your Race Suite. These stay on this device.</p>
+        <h2 className="page-heading">Settings</h2>
+        <p className="mt-1 page-subheading">Personal preferences for your Race Suite. These stay on this device.</p>
       </div>
 
-      <section className="rounded-2xl border border-white/[0.06] bg-surface p-6 shadow-card">
-        <div className="flex items-center gap-3 text-white">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.06]">
-            <User className="h-5 w-5 text-zinc-400" strokeWidth={1.75} />
+      <section className="card-utility">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-parchment">
+            <User className="h-5 w-5 text-ink-muted-48" strokeWidth={1.75} />
           </div>
           <div>
-            <h3 className="font-semibold">Profile</h3>
-            <p className="text-xs text-zinc-500">Signed in as Race Engineer</p>
+            <h3 className="text-body-strong text-ink">Profile</h3>
+            <p className="text-caption text-ink-muted-48">Signed in as Race Engineer</p>
           </div>
         </div>
-        <p className="mt-4 text-sm text-zinc-400">
+        <p className="mt-4 text-body text-ink-muted-80">
           Name and role are shown in the header. Account linking can be added later if your course requires it.
         </p>
       </section>
 
-      <section className="rounded-2xl border border-white/[0.06] bg-surface p-6 shadow-card">
-        <div className="flex items-center gap-3 text-white">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.06]">
-            <Bell className="h-5 w-5 text-zinc-400" strokeWidth={1.75} />
+      <section className="card-utility">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-parchment">
+            <Bell className="h-5 w-5 text-ink-muted-48" strokeWidth={1.75} />
           </div>
-          <h3 className="font-semibold">Notifications</h3>
+          <h3 className="text-body-strong text-ink">Notifications</h3>
         </div>
-        <label className="mt-5 flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/[0.06] bg-canvas/40 px-4 py-3">
+        <label className="mt-5 flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-hairline bg-parchment px-4 py-3">
           <div>
-            <p className="text-sm font-medium text-white">Session reminders</p>
-            <p className="text-xs text-zinc-500">Optional in-app hints before race weekends</p>
+            <p className="text-body-strong text-ink">Session reminders</p>
+            <p className="text-caption text-ink-muted-48">Optional in-app hints before race weekends</p>
           </div>
           <input
             type="checkbox"
             checked={notify}
             onChange={(e) => setNotify(e.target.checked)}
-            className="h-5 w-5 rounded border-white/20 bg-canvas accent-accent"
+            className="h-5 w-5 rounded border-hairline accent-primary"
           />
         </label>
       </section>
 
-      <section className="rounded-2xl border border-white/[0.06] bg-surface p-6 shadow-card">
-        <div className="flex items-center gap-3 text-white">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.06]">
-            <Moon className="h-5 w-5 text-zinc-400" strokeWidth={1.75} />
-          </div>
-          <h3 className="font-semibold">Appearance</h3>
+      <section className="card-utility">
+        <div className="flex items-center gap-3">
+          <Sparkles className="h-5 w-5 text-primary" strokeWidth={1.75} />
+          <h3 className="text-body-strong text-ink">Appearance</h3>
         </div>
-        <p className="mt-3 text-sm text-zinc-500">
-          The suite uses a fixed dark cockpit theme for readability and focus.
+        <p className="mt-3 text-body text-ink-muted-48">
+          Light mode only — calm parchment canvas, Action Blue accents, and minimal chrome per the design system.
         </p>
       </section>
 
-      <section className="rounded-2xl border border-white/[0.06] bg-surface/80 p-6 shadow-card">
-        <div className="flex items-center gap-3 text-white">
-          <Sparkles className="h-5 w-5 text-accent" strokeWidth={1.75} />
-          <h3 className="font-semibold">About</h3>
-        </div>
-        <p className="mt-3 text-sm text-zinc-400">
-          <span className="font-medium text-zinc-300">Control Race Suite</span> — F1-style dashboard for teams,
-          drivers, seasons, and analytics.
+      <section className="card-utility bg-parchment">
+        <h3 className="text-body-strong text-ink">About</h3>
+        <p className="mt-3 text-body text-ink-muted-80">
+          <span className="text-body-strong text-ink">F1 Race Suite</span> — dashboard for teams, drivers, seasons, and analytics.
         </p>
-        <p className="mt-2 text-xs text-zinc-600">Version 1.0</p>
+        <p className="mt-2 text-fine-print text-ink-muted-48">Version 1.0</p>
       </section>
     </div>
   );

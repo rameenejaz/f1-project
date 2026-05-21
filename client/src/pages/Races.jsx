@@ -87,26 +87,24 @@ export default function Races() {
   }
 
   if (err && seasons.length === 0) {
-    return (
-      <div className="rounded-2xl border border-rose-500/20 bg-surface p-6 text-rose-200">{err}</div>
-    );
+    return <div className="alert-error">{err}</div>;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-white">Races</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <h2 className="page-heading">Races</h2>
+          <p className="mt-1 page-subheading">
             Read-only calendar per season. Sort by date, points, fastest lap, or crowd size.
           </p>
         </div>
-        <label className="text-xs text-zinc-400">
+        <label className="text-caption text-ink-muted-48">
           Season
           <select
             value={seasonId}
             onChange={(e) => setSeasonId(e.target.value)}
-            className="mt-1 block min-w-[160px] rounded-xl border border-white/10 bg-canvas px-3 py-2 text-sm text-white"
+            className="input-field mt-1 block min-w-[160px]"
           >
             <option value="">Select season</option>
             {seasons.map((s) => (
@@ -118,18 +116,18 @@ export default function Races() {
         </label>
       </div>
 
-      {err ? <p className="text-sm text-rose-300">{err}</p> : null}
+      {err ? <p className="text-caption text-rose-700">{err}</p> : null}
 
-      <div className="overflow-x-auto rounded-2xl border border-white/[0.06] bg-surface">
-        <table className="w-full min-w-[900px] text-left text-sm">
+      <div className="table-shell">
+        <table className="w-full min-w-[900px] text-left text-body">
           <thead>
-            <tr className="border-b border-white/[0.06] text-xs uppercase tracking-wide text-zinc-500">
+            <tr className="table-head">
               {sortKeys.map(({ id, label }) => (
                 <th key={id} className="px-4 py-3 font-medium">
                   <button
                     type="button"
                     onClick={() => toggleSort(id)}
-                    className="inline-flex items-center gap-1 text-zinc-400 hover:text-white"
+                    className="inline-flex items-center gap-1 text-ink-muted-48 hover:text-ink"
                   >
                     {label}
                     {sortKey === id &&
@@ -137,43 +135,43 @@ export default function Races() {
                   </button>
                 </th>
               ))}
-              <th className="px-4 py-3 font-medium text-zinc-400">Winner</th>
-              <th className="px-4 py-3 font-medium text-zinc-400">Fastest lap</th>
-              <th className="px-4 py-3 font-medium text-zinc-400">Country</th>
-              <th className="px-4 py-3 font-medium text-zinc-400">Status</th>
+              <th className="px-4 py-3 font-medium text-ink-muted-48">Winner</th>
+              <th className="px-4 py-3 font-medium text-ink-muted-48">Fastest lap</th>
+              <th className="px-4 py-3 font-medium text-ink-muted-48">Country</th>
+              <th className="px-4 py-3 font-medium text-ink-muted-48">Status</th>
             </tr>
           </thead>
           <tbody>
             {sorted.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-4 py-10 text-center text-sm text-zinc-500">
+                <td colSpan={9} className="px-4 py-10 text-center text-caption text-ink-muted-48">
                   {seasonId ? 'No races for this season.' : 'Choose a season to load races.'}
                 </td>
               </tr>
             ) : (
               sorted.map((r) => (
-                <tr key={r.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-4 py-3 text-zinc-400">{r.race_date}</td>
-                  <td className="px-4 py-3 font-medium text-white">{r.race_name}</td>
-                  <td className="px-4 py-3 text-zinc-300">{r.winner_points ?? '—'}</td>
-                  <td className="px-4 py-3 text-zinc-400">
+                <tr key={r.id} className="table-row">
+                  <td className="px-4 py-3 text-ink-muted-80">{r.race_date}</td>
+                  <td className="px-4 py-3 text-body-strong text-ink">{r.race_name}</td>
+                  <td className="px-4 py-3 text-ink-muted-80">{r.winner_points ?? '—'}</td>
+                  <td className="px-4 py-3 text-ink-muted-80">
                     {r.fastest_lap_seconds != null ? r.fastest_lap_seconds.toFixed(3) : '—'}
                   </td>
-                  <td className="px-4 py-3 text-zinc-400">
+                  <td className="px-4 py-3 text-ink-muted-80">
                     {r.attendance != null ? r.attendance.toLocaleString() : '—'}
                   </td>
-                  <td className="px-4 py-3 text-zinc-300">
+                  <td className="px-4 py-3">
                     {r.winner_driver_id ? (
-                      <Link className="text-accent hover:underline" to={`/drivers/${r.winner_driver_id}`}>
+                      <Link className="text-primary hover:underline" to={`/drivers/${r.winner_driver_id}`}>
                         {r.winner_name ?? `#${r.winner_driver_id}`}
                       </Link>
                     ) : (
                       '—'
                     )}
                   </td>
-                  <td className="px-4 py-3 text-zinc-400">{r.fastest_lap_driver_name ?? '—'}</td>
-                  <td className="px-4 py-3 text-zinc-500">{r.host_country ?? '—'}</td>
-                  <td className="px-4 py-3 text-zinc-500">{r.race_status ?? '—'}</td>
+                  <td className="px-4 py-3 text-ink-muted-48">{r.fastest_lap_driver_name ?? '—'}</td>
+                  <td className="px-4 py-3 text-ink-muted-48">{r.host_country ?? '—'}</td>
+                  <td className="px-4 py-3 text-ink-muted-48">{r.race_status ?? '—'}</td>
                 </tr>
               ))
             )}
@@ -181,9 +179,9 @@ export default function Races() {
         </table>
       </div>
 
-      <p className="flex items-center gap-2 text-xs text-zinc-600">
-        <Flag className="h-3.5 w-3.5 text-zinc-500" />
-        Data from <code className="text-zinc-500">GET /races?season_id=</code>
+      <p className="flex items-center gap-2 text-fine-print text-ink-muted-48">
+        <Flag className="h-3.5 w-3.5" strokeWidth={1.75} />
+        Data from <code className="text-ink-muted-80">GET /races?season_id=</code>
       </p>
     </div>
   );

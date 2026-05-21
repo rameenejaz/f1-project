@@ -9,18 +9,15 @@ const icons = {
   lock: Lock,
 };
 
-export default function ActionCard({ label, icon, accent }) {
+export default function ActionCard({ label, icon }) {
   const Icon = icons[icon] || Circle;
   return (
     <button
       type="button"
-      className="group flex aspect-square flex-col items-center justify-center gap-3 rounded-2xl border border-white/[0.06] bg-surface p-4 text-center shadow-card transition hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-glow"
+      className="card-utility-interactive group flex aspect-square flex-col items-center justify-center gap-3 p-4 text-center active:scale-95"
     >
-      <Icon
-        className={`h-7 w-7 transition group-hover:scale-105 ${accent ? 'text-accent' : 'text-zinc-200'}`}
-        strokeWidth={1.5}
-      />
-      <span className="text-xs font-semibold uppercase tracking-wide text-zinc-300 group-hover:text-white">
+      <Icon className="h-7 w-7 text-primary motion-safe:transition-transform motion-safe:duration-150 group-hover:scale-105" strokeWidth={1.5} />
+      <span className="text-caption-strong uppercase tracking-wide text-ink-muted-80 group-hover:text-ink">
         {label}
       </span>
     </button>

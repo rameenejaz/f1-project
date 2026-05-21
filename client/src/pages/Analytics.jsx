@@ -16,13 +16,17 @@ import { fetchAnalyticsStats, fetchSeasons, fetchStandings, formatAxiosError } f
 
 const chartTooltip = {
   contentStyle: {
-    background: '#12121A',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: 12,
-    color: '#fff',
+    background: '#ffffff',
+    border: '1px solid #e0e0e0',
+    borderRadius: 11,
+    color: '#1d1d1f',
+    fontSize: 14,
   },
-  labelStyle: { color: '#a1a1aa' },
+  labelStyle: { color: '#7a7a7a' },
 };
+
+const GRID_STROKE = '#f0f0f0';
+const AXIS_TICK = '#7a7a7a';
 
 export default function Analytics() {
   const [stats, setStats] = useState({
@@ -84,7 +88,7 @@ export default function Analytics() {
         setConstructorPoints(
           rows
             .filter((r) => r.points > 0)
-            .map((r) => ({ name: r.name, points: r.points, color: r.color || '#E10600' }))
+            .map((r) => ({ name: r.name, points: r.points, color: r.color || '#0066cc' }))
         );
         setStandingsErr('');
       } catch (e) {
@@ -105,23 +109,23 @@ export default function Analytics() {
   }, [seasons, standingsSeasonId]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-semibold text-white">Analytics</h2>
-        <p className="text-sm text-zinc-500">
-          Charts from <code className="text-zinc-400">GET /stats/analytics</code> — aggregates on{' '}
-          <code className="text-zinc-400">races</code> and <code className="text-zinc-400">drivers</code> only
+        <h2 className="page-heading">Analytics</h2>
+        <p className="mt-1 page-subheading">
+          Charts from <code className="text-ink-muted-80">GET /stats/analytics</code> — aggregates on{' '}
+          <code className="text-ink-muted-80">races</code> and <code className="text-ink-muted-80">drivers</code> only
           (separate from the dashboard summary).
         </p>
       </div>
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <p className="text-xs text-zinc-500">Constructor points by season (from GET /stats/standings)</p>
-        <label className="text-xs text-zinc-400">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <p className="text-caption text-ink-muted-48">Constructor points by season (from GET /stats/standings)</p>
+        <label className="text-caption text-ink-muted-48">
           Season
           <select
             value={standingsSeasonId}
             onChange={(e) => setStandingsSeasonId(e.target.value)}
-            className="ml-2 rounded-xl border border-white/10 bg-canvas px-3 py-2 text-sm text-white"
+            className="input-field ml-2 inline-block min-w-[120px]"
           >
             {seasons.map((s) => (
               <option key={s.id} value={s.id}>
@@ -131,29 +135,25 @@ export default function Analytics() {
           </select>
         </label>
       </div>
-      {standingsErr ? <p className="mb-4 text-sm text-rose-300">{standingsErr}</p> : null}
-      <div className="mb-6">
+      {standingsErr ? <p className="text-caption text-rose-700">{standingsErr}</p> : null}
+      <div>
         <ChartCard title={`Constructor points ${standingsYear ? `(${standingsYear})` : ''}`} badge="standings">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={constructorPoints}
-              layout="vertical"
-              margin={{ top: 8, right: 16, left: 8, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a33" horizontal={false} />
-              <XAxis type="number" tick={{ fill: '#a1a1aa', fontSize: 11 }} axisLine={false} allowDecimals={false} />
+            <BarChart data={constructorPoints} layout="vertical" margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} horizontal={false} />
+              <XAxis type="number" tick={{ fill: AXIS_TICK, fontSize: 11 }} axisLine={false} allowDecimals={false} />
               <YAxis
                 type="category"
                 dataKey="name"
                 width={140}
-                tick={{ fill: '#a1a1aa', fontSize: 10 }}
+                tick={{ fill: AXIS_TICK, fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
               />
               <Tooltip {...chartTooltip} />
               <Bar dataKey="points" radius={[0, 6, 6, 0]} isAnimationActive animationDuration={900}>
                 {constructorPoints.map((entry, i) => (
-                  <Cell key={i} fill={entry.color || '#6366f1'} />
+                  <Cell key={i} fill={entry.color || '#0066cc'} />
                 ))}
               </Bar>
             </BarChart>
@@ -165,35 +165,31 @@ export default function Analytics() {
         <ChartCard title="Races per month" badge="MySQL">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={stats.racesPerMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a33" vertical={false} />
-              <XAxis dataKey="month" tick={{ fill: '#a1a1aa', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#a1a1aa', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
+              <XAxis dataKey="month" tick={{ fill: AXIS_TICK, fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: AXIS_TICK, fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
               <Tooltip {...chartTooltip} />
-              <Bar dataKey="races" fill="#E10600" radius={[6, 6, 0, 0]} isAnimationActive animationDuration={900} />
+              <Bar dataKey="races" fill="#0066cc" radius={[6, 6, 0, 0]} isAnimationActive animationDuration={900} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
         <ChartCard title="Wins per driver" badge="COUNT(winner)">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={stats.winsPerDriver}
-              layout="vertical"
-              margin={{ top: 8, right: 16, left: 8, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a33" horizontal={false} />
-              <XAxis type="number" tick={{ fill: '#a1a1aa', fontSize: 11 }} axisLine={false} allowDecimals={false} />
+            <BarChart data={stats.winsPerDriver} layout="vertical" margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} horizontal={false} />
+              <XAxis type="number" tick={{ fill: AXIS_TICK, fontSize: 11 }} axisLine={false} allowDecimals={false} />
               <YAxis
                 type="category"
                 dataKey="name"
                 width={120}
-                tick={{ fill: '#a1a1aa', fontSize: 10 }}
+                tick={{ fill: AXIS_TICK, fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
               />
               <Tooltip {...chartTooltip} />
               <Bar dataKey="wins" radius={[0, 6, 6, 0]} isAnimationActive animationDuration={900}>
                 {stats.winsPerDriver.map((entry, i) => (
-                  <Cell key={i} fill={entry.color || '#6366f1'} />
+                  <Cell key={i} fill={entry.color || '#0066cc'} />
                 ))}
               </Bar>
             </BarChart>
@@ -203,16 +199,16 @@ export default function Analytics() {
       <ChartCard title="Winner performance index by race" badge="JOIN drivers">
         <ResponsiveContainer width="100%" height={280}>
           <LineChart data={stats.performanceTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2a2a33" />
-            <XAxis dataKey="label" tick={{ fill: '#a1a1aa', fontSize: 10 }} axisLine={false} tickLine={false} />
-            <YAxis domain={[0, 100]} tick={{ fill: '#a1a1aa', fontSize: 11 }} axisLine={false} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
+            <XAxis dataKey="label" tick={{ fill: AXIS_TICK, fontSize: 10 }} axisLine={false} tickLine={false} />
+            <YAxis domain={[0, 100]} tick={{ fill: AXIS_TICK, fontSize: 11 }} axisLine={false} tickLine={false} />
             <Tooltip {...chartTooltip} />
             <Line
               type="monotone"
               dataKey="score"
-              stroke="#00D2BE"
+              stroke="#0066cc"
               strokeWidth={2}
-              dot={{ r: 3, fill: '#00D2BE' }}
+              dot={{ r: 3, fill: '#0066cc' }}
               isAnimationActive
               animationDuration={1000}
             />

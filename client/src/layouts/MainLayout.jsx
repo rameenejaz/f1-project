@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/Sidebar.jsx';
-import Navbar from '../components/Navbar.jsx';
+import GlobalNav from '../components/GlobalNav.jsx';
+import SubNav from '../components/SubNav.jsx';
 import { fetchDrivers, fetchTeams, formatAxiosError } from '../api.js';
 
 const STORAGE_ROLE = 'f1-demo-role';
@@ -29,6 +29,7 @@ function readStoredDriverId() {
 }
 
 export default function MainLayout() {
+  const searchRef = useRef(null);
   const [teams, setTeams] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
@@ -135,31 +136,39 @@ export default function MainLayout() {
   );
 
   return (
-    <div className="layout-main-bg min-h-screen bg-canvas text-white">
-      <Sidebar />
-      <div className="pl-64">
-        <Navbar
-          teams={teams}
-          drivers={drivers}
-          selectedTeamId={selectedTeamId}
-          onTeamChange={(id) => setSelectedTeamId(id)}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          role={role}
-          onRoleChange={setRole}
-          selectedDriverId={selectedDriverId}
-          onDriverChange={setSelectedDriverId}
-        />
-        <main className="p-6">
-          {loadError ? (
-            <div className="mb-6 rounded-2xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-              <p className="font-medium text-white">Could not load data from the API</p>
-              <p className="mt-1 text-rose-100/90">{loadError}</p>
-            </div>
-          ) : null}
-          <Outlet context={ctx} />
-        </main>
-      </div>
+    <div className="min-h-screen bg-parchment">
+      <GlobalNav onSearchFocus={() => searchRef.current?.focus()} />
+      <SubNav
+        searchRef={searchRef}
+        teams={teams}
+        drivers={drivers}
+        selectedTeamId={selectedTeamId}
+        onTeamChange={(id) => setSelectedTeamId(id)}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        role={role}
+        onRoleChange={setRole}
+        selectedDriverId={selectedDriverId}
+        onDriverChange={setSelectedDriverId}
+      />
+      <main className="mx-auto max-w-content px-4 py-8 sm:px-6 lg:px-8">
+        {loadError ? (
+          <div className="alert-error mb-6">
+            <p className="text-body-strong text-ink">Could not load data from the API</p>
+            <p className="mt-1 text-caption">{loadError}</p>
+          </div>
+        ) : null}
+        <Outlet context={ctx} />
+      </main>
+      <footer className="mt-section border-t border-hairline bg-parchment px-4 py-16 text-fine-print text-ink-muted-80 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-content">
+          <p className="text-caption-strong text-ink">F1 Race Suite</p>
+          <p className="mt-2 max-w-prose leading-[2.41]">
+            Driver and team operations dashboard — seasons, races, standings, and analytics from MySQL.
+          </p>
+          <p className="mt-8 text-ink-muted-48">Copyright © {new Date().getFullYear()} F1 Project. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }

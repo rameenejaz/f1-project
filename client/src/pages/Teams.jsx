@@ -26,14 +26,14 @@ export default function Teams() {
   const [sortDir, setSortDir] = useState(1);
   const [activeFilter, setActiveFilter] = useState('');
   const [name, setName] = useState('');
-  const [color, setColor] = useState('#E10600');
+  const [color, setColor] = useState('#0066cc');
   const [year, setYear] = useState(new Date().getFullYear());
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
   const [editing, setEditing] = useState(null);
   const [editName, setEditName] = useState('');
-  const [editColor, setEditColor] = useState('#E10600');
+  const [editColor, setEditColor] = useState('#0066cc');
   const [editYear, setEditYear] = useState(2000);
 
   const filteredTeams = useMemo(() => {
@@ -129,18 +129,18 @@ export default function Teams() {
       <div>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-        <h2 className="text-2xl font-semibold text-white">Teams</h2>
-        <p className="mt-1 text-sm text-zinc-500">
-          Create, update, delete — persisted in MySQL. Header search filters this table.
-          {!isAdmin ? ' Driver mode: read-only.' : null}
-        </p>
+            <h2 className="page-heading">Teams</h2>
+            <p className="mt-1 page-subheading">
+              Create, update, delete — persisted in MySQL. Header search filters this table.
+              {!isAdmin ? ' Driver mode: read-only.' : null}
+            </p>
           </div>
-          <label className="text-xs text-zinc-400">
+          <label className="text-caption text-ink-muted-48">
             Status
             <select
               value={activeFilter}
               onChange={(e) => setActiveFilter(e.target.value)}
-              className="mt-1 block min-w-[140px] rounded-xl border border-white/10 bg-canvas px-3 py-2 text-sm text-white"
+              className="input-field mt-1 block min-w-[140px]"
             >
               <option value="">All</option>
               <option value="Active">Active</option>
@@ -148,74 +148,66 @@ export default function Teams() {
             </select>
           </label>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.06] bg-surface">
-          <table className="w-full min-w-[480px] text-left text-sm">
+        <div className="mt-4 table-shell">
+          <table className="w-full min-w-[480px] text-left text-body">
             <thead>
-              <tr className="border-b border-white/[0.06] text-xs uppercase tracking-wide text-zinc-500">
+              <tr className="table-head">
                 {sortKeys.map(({ id, label }) => (
                   <th key={id} className="px-4 py-3 font-medium">
                     <button
                       type="button"
                       onClick={() => toggleSort(id)}
-                      className="inline-flex items-center gap-1 text-zinc-400 hover:text-white"
+                      className="inline-flex items-center gap-1 text-ink-muted-48 hover:text-ink"
                     >
                       {label}
                       {sortKey === id &&
-                        (sortDir === 1 ? (
-                          <ArrowUp className="h-3 w-3" />
-                        ) : (
-                          <ArrowDown className="h-3 w-3" />
-                        ))}
+                        (sortDir === 1 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
                     </button>
                   </th>
                 ))}
-                <th className="px-4 py-3 font-medium text-zinc-400">Titles</th>
-                <th className="px-4 py-3 font-medium text-zinc-400">Status</th>
-                <th className="px-4 py-3 font-medium text-zinc-400">Color</th>
-                {isAdmin ? <th className="px-4 py-3 text-right font-medium text-zinc-400">Actions</th> : null}
+                <th className="px-4 py-3 font-medium text-ink-muted-48">Color</th>
+                {isAdmin ? <th className="px-4 py-3 text-right font-medium text-ink-muted-48">Actions</th> : null}
               </tr>
             </thead>
             <tbody>
               {sorted.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 6 : 5} className="px-4 py-10 text-center text-sm text-zinc-500">
-                    {teams.length === 0
-                      ? 'No teams loaded.'
-                      : 'No teams match the header search.'}
+                  <td colSpan={isAdmin ? 6 : 5} className="px-4 py-10 text-center text-caption text-ink-muted-48">
+                    {teams.length === 0 ? 'No teams loaded.' : 'No teams match the header search.'}
                   </td>
                 </tr>
               ) : (
                 sorted.map((t) => (
-                  <tr key={t.id} className="border-b border-white/[0.04] last:border-0">
-                    <td className="px-4 py-3 font-medium text-white">{t.name}</td>
-                    <td className="px-4 py-3 text-zinc-400">{t.founded_year}</td>
-                    <td className="px-4 py-3 text-zinc-400">{t.constructors_titles ?? 0}</td>
-                    <td className="px-4 py-3 text-zinc-500">{t.active_status ?? '—'}</td>
+                  <tr key={t.id} className="table-row">
+                    <td className="px-4 py-3 text-body-strong text-ink">{t.name}</td>
+                    <td className="px-4 py-3 text-ink-muted-80">{t.founded_year}</td>
+                    <td className="px-4 py-3 text-ink-muted-80">{t.constructors_titles ?? 0}</td>
+                    <td className="px-4 py-3 text-ink-muted-48">{t.active_status ?? '—'}</td>
                     <td className="px-4 py-3">
                       <span
-                        className="inline-block h-6 w-6 rounded-full border border-white/10"
+                        className="inline-block h-6 w-6 rounded-full border border-hairline"
                         style={{ background: t.color }}
                       />
                     </td>
                     {isAdmin ? (
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        type="button"
-                        onClick={() => startEdit(t)}
-                        className="mr-2 rounded-lg p-2 text-zinc-400 hover:bg-white/5 hover:text-white"
-                        aria-label="Edit"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete(t.id, t.name)}
-                        className="rounded-lg p-2 text-zinc-400 hover:bg-rose-500/10 hover:text-rose-300"
-                        aria-label="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => startEdit(t)}
+                          className="btn-icon-circular mr-1 inline-flex h-9 w-9"
+                          aria-label="Edit"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDelete(t.id, t.name)}
+                          className="btn-icon-circular inline-flex h-9 w-9 text-rose-700"
+                          aria-label="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
                     ) : null}
                   </tr>
                 ))
@@ -227,103 +219,63 @@ export default function Teams() {
 
       <div className="space-y-6">
         {isAdmin ? (
-        <form
-          onSubmit={onCreate}
-          className="space-y-4 rounded-2xl border border-white/[0.06] bg-surface p-5 shadow-card"
-        >
-          <h3 className="text-sm font-semibold text-white">Add team</h3>
-          <label className="block text-xs text-zinc-400">
-            Name
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="mt-1 w-full rounded-xl border border-white/10 bg-canvas px-3 py-2 text-sm text-white"
-            />
-          </label>
-          <label className="block text-xs text-zinc-400">
-            Accent (hex)
-            <input
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="mt-1 h-10 w-full cursor-pointer rounded-xl border border-white/10 bg-canvas"
-            />
-          </label>
-          <label className="block text-xs text-zinc-400">
-            Founded year
-            <input
-              type="number"
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-              required
-              className="mt-1 w-full rounded-xl border border-white/10 bg-canvas px-3 py-2 text-sm text-white"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-gradient-to-r from-accent to-red-700 py-2.5 text-sm font-semibold text-white shadow-sm hover:brightness-110 disabled:opacity-50 motion-safe:transition motion-safe:duration-150"
-          >
-            {loading ? 'Saving…' : 'Create team'}
-          </button>
-        </form>
+          <form onSubmit={onCreate} className="card-utility space-y-4">
+            <h3 className="text-body-strong text-ink">Add team</h3>
+            <label className="block text-caption text-ink-muted-48">
+              Name
+              <input value={name} onChange={(e) => setName(e.target.value)} required className="input-field" />
+            </label>
+            <label className="block text-caption text-ink-muted-48">
+              Accent (hex)
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="input-field mt-1 h-10 w-full cursor-pointer p-1"
+              />
+            </label>
+            <label className="block text-caption text-ink-muted-48">
+              Founded year
+              <input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} required className="input-field" />
+            </label>
+            <button type="submit" disabled={loading} className="btn-primary w-full disabled:opacity-50">
+              {loading ? 'Saving…' : 'Create team'}
+            </button>
+          </form>
         ) : null}
 
         {isAdmin && editing != null && (
-          <form
-            onSubmit={onUpdate}
-            className="space-y-4 rounded-2xl border border-accent/30 bg-surface p-5 shadow-card"
-          >
-            <h3 className="text-sm font-semibold text-white">Edit team #{editing}</h3>
-            <label className="block text-xs text-zinc-400">
+          <form onSubmit={onUpdate} className="card-utility space-y-4 ring-2 ring-primary/30">
+            <h3 className="text-body-strong text-ink">Edit team #{editing}</h3>
+            <label className="block text-caption text-ink-muted-48">
               Name
-              <input
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                required
-                className="mt-1 w-full rounded-xl border border-white/10 bg-canvas px-3 py-2 text-sm text-white"
-              />
+              <input value={editName} onChange={(e) => setEditName(e.target.value)} required className="input-field" />
             </label>
-            <label className="block text-xs text-zinc-400">
+            <label className="block text-caption text-ink-muted-48">
               Color
               <input
                 type="color"
                 value={editColor}
                 onChange={(e) => setEditColor(e.target.value)}
-                className="mt-1 h-10 w-full cursor-pointer rounded-xl border border-white/10 bg-canvas"
+                className="input-field mt-1 h-10 w-full cursor-pointer p-1"
               />
             </label>
-            <label className="block text-xs text-zinc-400">
+            <label className="block text-caption text-ink-muted-48">
               Founded year
-              <input
-                type="number"
-                value={editYear}
-                onChange={(e) => setEditYear(Number(e.target.value))}
-                required
-                className="mt-1 w-full rounded-xl border border-white/10 bg-canvas px-3 py-2 text-sm text-white"
-              />
+              <input type="number" value={editYear} onChange={(e) => setEditYear(Number(e.target.value))} required className="input-field" />
             </label>
             <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 rounded-xl bg-white/10 py-2 text-sm font-semibold text-white hover:bg-white/15"
-              >
-                Save (PUT)
+              <button type="submit" disabled={loading} className="btn-primary flex-1 disabled:opacity-50">
+                Save
               </button>
-              <button
-                type="button"
-                onClick={() => setEditing(null)}
-                className="rounded-xl border border-white/15 px-4 py-2 text-sm text-zinc-400"
-              >
+              <button type="button" onClick={() => setEditing(null)} className="btn-pearl-capsule">
                 Cancel
               </button>
             </div>
           </form>
         )}
 
-        {msg && <p className="text-center text-xs text-zinc-400">{msg}</p>}
+        {msg && <p className="text-center text-caption text-ink-muted-48">{msg}</p>}
       </div>
     </div>
   );

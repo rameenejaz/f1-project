@@ -83,11 +83,11 @@ export default function Dashboard() {
   const myDriver = drivers.find((d) => d.id === selectedDriverId);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <p className="text-sm text-zinc-500">Welcome back</p>
-        <h2 className="text-2xl font-semibold tracking-tight text-white">Race Operations</h2>
-        <p className="mt-1 text-xs text-zinc-600">
+        <p className="section-label">Welcome back</p>
+        <h2 className="page-heading">Race Operations</h2>
+        <p className="mt-1 text-caption text-ink-muted-48">
           Live counts and recent results from MySQL
           {role === 'driver' && selectedDriverId && myDriver
             ? ` · scoped to ${myDriver.name}`
@@ -100,39 +100,24 @@ export default function Dashboard() {
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {actionTiles.map((a) => (
-          <ActionCard key={a.id} label={a.label} icon={a.icon} accent={a.accent} />
+          <ActionCard key={a.id} label={a.label} icon={a.icon} />
         ))}
       </section>
 
       {summary.driver_scope && role === 'driver' && selectedDriverId ? (
         <section className="grid gap-3 sm:grid-cols-3">
-          <StatCard
-            icon={Trophy}
-            label="My race wins"
-            value={String(summary.driver_scope.wins ?? 0)}
-            sub="From races table"
-          />
-          <StatCard
-            icon={Award}
-            label="My points (wins)"
-            value={String(summary.driver_scope.points ?? 0)}
-            sub="Sum of winner_points"
-          />
-          <StatCard
-            icon={Timer}
-            label="Fastest laps set"
-            value={String(summary.driver_scope.fastest_laps ?? 0)}
-            sub="fastest_lap_driver_id"
-          />
+          <StatCard icon={Trophy} label="My race wins" value={String(summary.driver_scope.wins ?? 0)} sub="From races table" />
+          <StatCard icon={Award} label="My points (wins)" value={String(summary.driver_scope.points ?? 0)} sub="Sum of winner_points" />
+          <StatCard icon={Timer} label="Fastest laps set" value={String(summary.driver_scope.fastest_laps ?? 0)} sub="fastest_lap_driver_id" />
         </section>
       ) : null}
 
       <section className="grid gap-6 lg:grid-cols-[1fr_280px]">
-        <div className="rounded-2xl border border-white/[0.06] bg-surface/80 p-6 shadow-card">
+        <div className="card-utility p-6">
           <HeroSection
             teamName={team?.name ?? 'Select a team'}
             subtitle={`Founded ${team?.founded_year ?? '—'} · ${filteredDrivers.length} drivers in roster`}
-            accentColor={team?.color ?? '#E10600'}
+            accentColor={team?.color ?? '#0066cc'}
             onPrev={() => cycle(-1)}
             onNext={() => cycle(1)}
           />
@@ -145,15 +130,15 @@ export default function Dashboard() {
       </section>
 
       {cs ? (
-        <section className="rounded-2xl border border-white/[0.06] bg-surface/90 p-5 shadow-card">
+        <section className="card-utility">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold text-white">Current season</h3>
-            <span className="text-xs text-zinc-500">
+            <h3 className="text-body-strong text-ink">Current season</h3>
+            <span className="badge-muted">
               {cs.completed_rounds}/{cs.planned_rounds} rounds
             </span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-white">{cs.year}</p>
-          <Link to="/races" className="mt-2 inline-block text-xs text-accent hover:underline">
+          <p className="mt-2 font-display text-display-lg text-ink">{cs.year}</p>
+          <Link to="/races" className="mt-2 inline-block text-caption text-primary hover:underline">
             View races calendar →
           </Link>
         </section>
@@ -167,33 +152,25 @@ export default function Dashboard() {
             value={`${teamStats.driver_count ?? 0} drivers`}
             sub={`Avg performance ${teamStats.avg_performance ?? 0}`}
           />
-          <StatCard
-            icon={Trophy}
-            label="Team wins (field)"
-            value={String(teamStats.total_wins ?? 0)}
-            sub="Sum of driver total_wins"
-          />
+          <StatCard icon={Trophy} label="Team wins (field)" value={String(teamStats.total_wins ?? 0)} sub="Sum of driver total_wins" />
           <StatCard icon={Flag} label="Constructors" value={String(ts.teams ?? 0)} sub="Teams in DB" />
         </section>
       ) : null}
 
       {(summary.top_drivers ?? []).length > 0 ? (
-        <section className="rounded-2xl border border-white/[0.06] bg-surface p-5 shadow-card">
-          <h3 className="text-sm font-semibold text-white">Top drivers by points</h3>
-          <ul className="mt-3 divide-y divide-white/[0.06] text-sm">
+        <section className="card-utility">
+          <h3 className="text-body-strong text-ink">Top drivers by points</h3>
+          <ul className="mt-3 divide-y divide-divider-soft text-body">
             {summary.top_drivers.map((d) => (
-              <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-zinc-300">
-                <span className="flex items-center gap-2 font-medium text-white">
-                  <span
-                    className="inline-block h-2.5 w-2.5 rounded-full ring-1 ring-white/20"
-                    style={{ background: d.color || '#888' }}
-                  />
-                  <Link to={`/drivers/${d.id}`} className="hover:text-accent">
+              <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span className="flex items-center gap-2 text-body-strong text-ink">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full ring-1 ring-hairline" style={{ background: d.color || '#888' }} />
+                  <Link to={`/drivers/${d.id}`} className="hover:text-primary">
                     {d.name}
                   </Link>
                 </span>
-                <span className="text-xs text-zinc-500">{d.race_wins} wins</span>
-                <span className="text-xs font-semibold text-accent">{d.points} pts</span>
+                <span className="text-caption text-ink-muted-48">{d.race_wins} wins</span>
+                <span className="text-caption-strong text-primary">{d.points} pts</span>
               </li>
             ))}
           </ul>
@@ -201,19 +178,16 @@ export default function Dashboard() {
       ) : null}
 
       {(summary.top_teams ?? []).length > 0 ? (
-        <section className="rounded-2xl border border-white/[0.06] bg-surface p-5 shadow-card">
-          <h3 className="text-sm font-semibold text-white">Top teams by points</h3>
-          <ul className="mt-3 divide-y divide-white/[0.06] text-sm">
+        <section className="card-utility">
+          <h3 className="text-body-strong text-ink">Top teams by points</h3>
+          <ul className="mt-3 divide-y divide-divider-soft text-body">
             {summary.top_teams.map((t) => (
-              <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-zinc-300">
-                <span className="flex items-center gap-2 font-medium text-white">
-                  <span
-                    className="inline-block h-2.5 w-2.5 rounded-full ring-1 ring-white/20"
-                    style={{ background: t.color || '#888' }}
-                  />
+              <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span className="flex items-center gap-2 text-body-strong text-ink">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full ring-1 ring-hairline" style={{ background: t.color || '#888' }} />
                   {t.name}
                 </span>
-                <span className="text-xs font-semibold text-accent">{t.points} pts</span>
+                <span className="text-caption-strong text-primary">{t.points} pts</span>
               </li>
             ))}
           </ul>
@@ -222,40 +196,34 @@ export default function Dashboard() {
 
       {(summary.driver_standings_snippet ?? []).length > 0 ? (
         <section className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-2xl border border-white/[0.06] bg-surface p-5 shadow-card">
-            <h3 className="text-sm font-semibold text-white">Driver standings {cs?.year ? `(${cs.year})` : ''}</h3>
-            <ul className="mt-3 max-h-64 space-y-2 overflow-auto text-sm">
+          <div className="card-utility">
+            <h3 className="text-body-strong text-ink">Driver standings {cs?.year ? `(${cs.year})` : ''}</h3>
+            <ul className="mt-3 max-h-64 space-y-2 overflow-auto text-body">
               {summary.driver_standings_snippet.map((d, i) => (
-                <li key={d.id} className="flex items-center justify-between gap-2 text-zinc-300">
+                <li key={d.id} className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2">
-                    <span className="w-5 text-xs text-zinc-500">{i + 1}</span>
-                    <span
-                      className="inline-block h-2 w-2 rounded-full"
-                      style={{ background: d.team_color || '#666' }}
-                    />
-                    <Link to={`/drivers/${d.id}`} className="font-medium text-white hover:text-accent">
+                    <span className="w-5 text-caption text-ink-muted-48">{i + 1}</span>
+                    <span className="inline-block h-2 w-2 rounded-full" style={{ background: d.team_color || '#666' }} />
+                    <Link to={`/drivers/${d.id}`} className="text-body-strong text-ink hover:text-primary">
                       {d.name}
                     </Link>
                   </span>
-                  <span className="text-xs text-accent">{d.points} pts</span>
+                  <span className="text-caption text-primary">{d.points} pts</span>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="rounded-2xl border border-white/[0.06] bg-surface p-5 shadow-card">
-            <h3 className="text-sm font-semibold text-white">Constructor standings</h3>
-            <ul className="mt-3 max-h-64 space-y-2 overflow-auto text-sm">
+          <div className="card-utility">
+            <h3 className="text-body-strong text-ink">Constructor standings</h3>
+            <ul className="mt-3 max-h-64 space-y-2 overflow-auto text-body">
               {summary.constructor_standings_snippet.map((t, i) => (
-                <li key={t.id} className="flex items-center justify-between gap-2 text-zinc-300">
+                <li key={t.id} className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2">
-                    <span className="w-5 text-xs text-zinc-500">{i + 1}</span>
-                    <span
-                      className="inline-block h-2 w-2 rounded-full"
-                      style={{ background: t.color || '#666' }}
-                    />
-                    <span className="font-medium text-white">{t.name}</span>
+                    <span className="w-5 text-caption text-ink-muted-48">{i + 1}</span>
+                    <span className="inline-block h-2 w-2 rounded-full" style={{ background: t.color || '#666' }} />
+                    <span className="text-body-strong text-ink">{t.name}</span>
                   </span>
-                  <span className="text-xs text-accent">{t.points} pts</span>
+                  <span className="text-caption text-primary">{t.points} pts</span>
                 </li>
               ))}
             </ul>
@@ -264,39 +232,39 @@ export default function Dashboard() {
       ) : null}
 
       {(summary.fastest_laps_season ?? []).length > 0 ? (
-        <section className="rounded-2xl border border-white/[0.06] bg-surface p-5 shadow-card">
-          <h3 className="text-sm font-semibold text-white">Fastest laps (selected season)</h3>
-          <ul className="mt-3 divide-y divide-white/[0.06] text-sm">
+        <section className="card-utility">
+          <h3 className="text-body-strong text-ink">Fastest laps (selected season)</h3>
+          <ul className="mt-3 divide-y divide-divider-soft text-body">
             {summary.fastest_laps_season.map((r, i) => (
-              <li key={i} className="flex flex-wrap items-center justify-between gap-2 py-2 text-zinc-300">
-                <span className="font-medium text-white">{r.race_name}</span>
-                <span className="text-xs text-zinc-500">{r.race_date}</span>
-                <span className="text-xs text-accent">{r.driver_name}</span>
-                <span className="text-xs text-zinc-400">{r.fastest_lap_seconds.toFixed(3)}s</span>
+              <li key={i} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span className="text-body-strong text-ink">{r.race_name}</span>
+                <span className="text-caption text-ink-muted-48">{r.race_date}</span>
+                <span className="text-caption text-primary">{r.driver_name}</span>
+                <span className="text-caption text-ink-muted-80">{r.fastest_lap_seconds.toFixed(3)}s</span>
               </li>
             ))}
           </ul>
         </section>
       ) : null}
 
-      <section className="rounded-2xl border border-white/[0.06] bg-surface p-5 shadow-card">
-        <h3 className="text-sm font-semibold text-white">Recent races</h3>
-        <ul className="mt-3 divide-y divide-white/[0.06] text-sm">
+      <section className="card-utility">
+        <h3 className="text-body-strong text-ink">Recent races</h3>
+        <ul className="mt-3 divide-y divide-divider-soft text-body">
           {(summary.recent_races ?? []).length === 0 ? (
-            <li className="py-2 text-zinc-500">No races in database yet.</li>
+            <li className="py-2 text-ink-muted-48">No races in database yet.</li>
           ) : (
             summary.recent_races.map((r, i) => (
-              <li key={i} className="flex flex-wrap items-center justify-between gap-2 py-2 text-zinc-300">
-                <span className="font-medium text-white">{r.race_name}</span>
-                <span className="text-xs text-zinc-500">
+              <li key={i} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span className="text-body-strong text-ink">{r.race_name}</span>
+                <span className="text-caption text-ink-muted-48">
                   {r.season_year} · {r.race_date}
                 </span>
-                <span className="text-xs text-accent">{r.winner_name ?? '—'}</span>
+                <span className="text-caption text-primary">{r.winner_name ?? '—'}</span>
                 {r.winner_points != null ? (
-                  <span className="text-xs text-zinc-500">{r.winner_points} pts</span>
+                  <span className="text-caption text-ink-muted-48">{r.winner_points} pts</span>
                 ) : null}
                 {r.fastest_lap_driver_name ? (
-                  <span className="text-xs text-zinc-500">FL: {r.fastest_lap_driver_name}</span>
+                  <span className="text-caption text-ink-muted-48">FL: {r.fastest_lap_driver_name}</span>
                 ) : null}
               </li>
             ))
@@ -307,13 +275,13 @@ export default function Dashboard() {
       <section>
         <div className="mb-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <User className="h-5 w-5 text-accent" />
-            <h3 className="text-lg font-semibold text-white">Driver roster</h3>
+            <User className="h-5 w-5 text-primary" strokeWidth={1.75} />
+            <h3 className="text-body-strong text-ink">Driver roster</h3>
           </div>
-          <span className="text-xs text-zinc-500">{filteredDrivers.length} drivers</span>
+          <span className="text-caption text-ink-muted-48">{filteredDrivers.length} drivers</span>
         </div>
         {filteredDrivers.length === 0 ? (
-          <p className="rounded-2xl border border-white/[0.06] bg-surface px-4 py-8 text-center text-sm text-zinc-500">
+          <p className="card-utility py-8 text-center text-caption text-ink-muted-48">
             No drivers match the selected team or header search.
           </p>
         ) : (

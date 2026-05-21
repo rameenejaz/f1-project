@@ -1,72 +1,62 @@
 import { Link } from 'react-router-dom';
 
 function statusFromScore(score) {
-  if (score >= 90) return { label: 'Optimal', tone: 'emerald' };
-  if (score >= 75) return { label: 'Stable', tone: 'amber' };
-  return { label: 'Watch', tone: 'rose' };
+  if (score >= 90) return { label: 'Optimal', tone: 'optimal' };
+  if (score >= 75) return { label: 'Stable', tone: 'stable' };
+  return { label: 'Watch', tone: 'watch' };
 }
 
 const tones = {
-  emerald: 'bg-emerald-500/15 text-emerald-300 ring-emerald-500/25',
-  amber: 'bg-amber-500/15 text-amber-200 ring-amber-500/25',
-  rose: 'bg-rose-500/15 text-rose-200 ring-rose-500/25',
-};
-
-const glow = {
-  emerald: 'from-emerald-500/25',
-  amber: 'from-amber-500/25',
-  rose: 'from-rose-500/25',
+  optimal: 'bg-primary/10 text-primary ring-primary/20',
+  stable: 'bg-amber-50 text-amber-800 ring-amber-200',
+  watch: 'bg-rose-50 text-rose-800 ring-rose-200',
 };
 
 export default function DriverCard({ driver }) {
   const score = driver.performance_score ?? 0;
   const status = statusFromScore(score);
   const role = driver.role || 'Race Driver';
+  const initials = String(driver.name || '')
+    .split(' ')
+    .map((s) => s[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
-    <article className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-surface p-5 shadow-card">
-      <div
-        className={`pointer-events-none absolute -right-8 -bottom-16 h-40 w-40 rounded-full bg-gradient-to-br ${glow[status.tone]} to-transparent opacity-70`}
-      />
-      <div className="relative flex items-start justify-between gap-3">
+    <article className="card-utility-interactive relative overflow-hidden">
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <Link to={`/drivers/${driver.id}`} className="text-lg font-semibold text-white hover:text-accent">
+          <Link to={`/drivers/${driver.id}`} className="text-body-strong text-ink hover:text-primary">
             {driver.name}
           </Link>
-          <p className="text-xs text-zinc-500">{role}</p>
-          <p className="mt-1 text-sm text-zinc-400">{driver.team}</p>
+          <p className="text-caption text-ink-muted-48">{role}</p>
+          <p className="mt-1 text-body text-ink-muted-80">{driver.team}</p>
         </div>
         <div
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-sm font-bold text-white"
-          style={{ boxShadow: `0 0 0 1px ${driver.color || '#444'}55` }}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-hairline bg-parchment text-caption-strong text-ink"
+          style={{ boxShadow: `inset 0 0 0 2px ${driver.color || '#d2d2d7'}` }}
         >
-          {String(driver.name || '')
-            .split(' ')
-            .map((s) => s[0])
-            .join('')
-            .slice(0, 2)
-            .toUpperCase()}
+          {initials}
         </div>
       </div>
-      <div className="relative mt-5 grid grid-cols-2 gap-3 text-xs">
+      <div className="mt-5 grid grid-cols-2 gap-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Performance</p>
+          <p className="section-label">Performance</p>
           <span
-            className={`mt-1 inline-flex rounded-lg px-2 py-1 text-sm font-semibold ring-1 ring-inset ${tones[status.tone]}`}
+            className={`mt-1 inline-flex rounded-md px-2 py-1 text-caption-strong ring-1 ring-inset ${tones[status.tone]}`}
           >
             +{score}
           </span>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Wins</p>
-          <span className="mt-1 inline-block rounded-lg bg-white/[0.04] px-2 py-1 text-sm font-medium text-white ring-1 ring-white/10">
+          <p className="section-label">Wins</p>
+          <span className="mt-1 inline-block rounded-md bg-parchment px-2 py-1 text-caption-strong text-ink ring-1 ring-hairline">
             {driver.total_wins ?? 0}
           </span>
         </div>
       </div>
-      <Link
-        to={`/drivers/${driver.id}`}
-        className="relative mt-4 inline-block text-xs font-medium text-accent hover:underline"
-      >
+      <Link to={`/drivers/${driver.id}`} className="mt-4 inline-block text-caption text-primary hover:underline">
         View profile →
       </Link>
     </article>
